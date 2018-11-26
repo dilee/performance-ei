@@ -16,17 +16,18 @@
 # ----------------------------------------------------------------------------
 # Run Performance Tests for WSO2 Enterprise Integrator
 # ----------------------------------------------------------------------------
-
-product_version="6.4.0"
-ei_ssh_host=ei
-ei_host=$(get_ssh_hostname $ei_ssh_host)
-heap_size=2
-
-
 script_dir=$(dirname "$0")
 # Execute common script
 . $script_dir/perf-test-common.sh
 
+function initialize() {
+    export ei_ssh_host=ei
+    export ei_host=$(get_ssh_hostname $ei_ssh_host)
+}
+export -f initialize
+
+product=wso2ei-6.1.1
+heap_size=2
 
 declare -A test_scenario0=(
     [name]="DirectProxy"

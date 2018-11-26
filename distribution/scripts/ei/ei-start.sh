@@ -35,9 +35,9 @@ export JAVA_HOME="${jvm_dir}"
 carbon_bootstrap_class=org.wso2.carbon.bootstrap.Bootstrap
 product_path=$HOME/$product
 
-startup_script=$product_path/bin/wso2server.sh
-if [[ $product == *"wso2ei"* ]]; then
-    startup_script=$product_path/bin/integrator.sh
+startup_script=$product_path/bin/integrator.sh
+if [[ $product == *"wso2esb"* ]]; then
+    startup_script=$product_path/bin/wso2server.sh
 fi
 
 if pgrep -f "$carbon_bootstrap_class" > /dev/null; then
