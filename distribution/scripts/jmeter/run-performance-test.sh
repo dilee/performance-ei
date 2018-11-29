@@ -17,8 +17,11 @@
 # Run Performance Tests for WSO2 Enterprise Integrator
 # ----------------------------------------------------------------------------
 script_dir=$(dirname "$0")
+declare -a message_sizes=("500" "1024" "5120" "10240" "102400" "512000")
+payload_size_postfix="B"
+
 # Execute common script
-. $script_dir/perf-test-common.sh
+. $script_dir/perf-test-common.sh -b $message_sizes
 
 function initialize() {
     export ei_ssh_host=ei
@@ -26,7 +29,7 @@ function initialize() {
 }
 export -f initialize
 
-product=wso2ei-6.1.1
+product=wso2ei
 heap_size=2
 
 declare -A test_scenario0=(
@@ -86,6 +89,17 @@ declare -A test_scenario10=(
     [skip]=true
 )
 
+function verifyRequestPayloads() {
+    for i in "${message_sizes[@]}"
+    do
+        i+=$payload_size_postfix
+        echo $i
+        if ! ls requests/$i* 1> /dev/null 2>&1; then
+            echo "Test payload for size: $i is missing"
+            exit 1
+        fi
+    done
+}
 
 function before_execute_test_scenario() {
     local service_path=${scenario[path]}
@@ -104,7 +118,7 @@ function before_execute_test_scenario() {
     fi
 
     echo "Starting Enterprise Integrator..."
-    ssh $ei_ssh_host "./ei/ei-start.sh $product $heap_size"
+    ssh $ei_ssh_host "./ei/ei-start.sh -p $product -s $heap_size"
 }
 
 function after_execute_test_scenario() {

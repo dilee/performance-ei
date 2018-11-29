@@ -16,15 +16,42 @@
 # ----------------------------------------------------------------------------
 # Start WSO2 Enterprise Integrator
 # ----------------------------------------------------------------------------
+function usageHelp() {
+    echo "-p: Product name."
+    echo "-s: Heap size."
+}
+export -f usageHelp
 
-product=$1
-heap_size=$2
-if [[ -z $product ]]; then
-    product=wso2ei-6.1.1
-fi
-if [[ -z $heap_size ]]; then
-    heap_size="4"
-fi
+while getopts "p:s:h" opts; do
+    case $opts in
+    p)
+        product=${OPTARG}
+        ;;
+    s)
+        heap_size=${OPTARG}
+        ;;
+    h)
+        usageHelp
+        exit 0
+        ;;
+    *)
+        usageHelp
+        exit 1
+        ;;
+    esac
+done
+shift "$((OPTIND - 1))"
+
+function validate() {
+    if [[ -z $product ]]; then
+        product=wso2ei-6.1.1
+    fi
+
+    if [[ -z $heap_size ]]; then
+        heap_size="4"
+    fi
+}
+validate
 
 jvm_dir=""
 for dir in /usr/lib/jvm/jdk1.8*; do
@@ -34,8 +61,8 @@ export JAVA_HOME="${jvm_dir}"
 
 carbon_bootstrap_class=org.wso2.carbon.bootstrap.Bootstrap
 product_path=$HOME/$product
-
 startup_script=$product_path/bin/integrator.sh
+
 if [[ $product == *"wso2esb"* ]]; then
     startup_script=$product_path/bin/wso2server.sh
 fi

@@ -27,10 +27,11 @@ export script_dir=$(dirname "$0")
 export netty_host=""
 export product=""
 export user=""
+export product_home="wso2ei"
 
 function usageHelp() {
     echo "-n: The hostname of Netty Service."
-    echo "-d: EI Product name."
+    echo "-d: EI Product name. This should be either 'wso2ei' or 'wso2esb'"
     echo "-u: General user of the OS."
 }
 export -f usageHelp
@@ -45,6 +46,10 @@ while getopts "gp:w:o:hn:d:u:" opt; do
         ;;
     u)
         user=${OPTARG}
+        ;;
+    h)
+        usageHelp
+        exit 0
         ;;
     *)
         opts+=("-${opt}")
@@ -61,8 +66,8 @@ validate() {
     fi
 
     if [[ -z $product ]]; then
-        echo "Product name not prvided. Setting the default value: wso2ei-6.1.1."
-        product=wso2ei-6.1.1
+        echo "Product name not provided."
+        exit 1
     fi
 
     if [[ -z $user ]]; then
@@ -71,6 +76,10 @@ validate() {
     fi
 }
 export -f validate
+
+if [[ $product == *"wso2esb"* ]]; then
+    product_home="wso2esb"
+fi
 
 validate_command() {
     # Check whether given command exists
@@ -82,27 +91,35 @@ validate_command() {
     fi
 }
 
-validate $netty_host
-
 #Validate commands
 validate_command unzip unzip
 
-export product_path="$HOME/$product"
-export product_name="Enterprise Integrator"
-
 function setup() {
-    # Extract product
-    if [[ ! -f $product_path.zip ]]; then
+    export product_path="$HOME/$product"
+    export product_name="Enterprise Integrator"
+
+    if ! ls $product_path*.zip 1> /dev/null 2>&1; then
         echo "Please download the $product_name to $HOME"
         exit 1
     fi
+
     if [[ ! -d $product_path ]]; then
-        echo "Extracting $product_path.zip"
-        sudo -u $user unzip -q $product_path.zip -d $HOME
+        echo "Extracting product $product"
+        sudo -u $user unzip -q $product_path*.zip -d $HOME
+
+        # Renaming the extracted EI directory to $product_home
+        current_dir=$(pwd)
+        cd $HOME
+        for z in $product*; do
+            if [ -d "$z" ]; then
+                mv $z $product_home;
+            fi
+        done
+        cd $current_dir
+
         echo "$product_name is extracted"
     else
         echo "$product_name is already extracted"
-        # exit 1
     fi
 
     capp_file=$script_dir/../ei/capp/EIPerformanceTestArtifacts-1.0.0.car
