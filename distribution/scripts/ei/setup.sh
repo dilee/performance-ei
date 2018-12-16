@@ -39,7 +39,7 @@ function usageHelp() {
 }
 export -f usageHelp
 
-while getopts "gp:w:o:hn:d:u:j:" opt; do
+while getopts "hn:d:u:j:" opt; do
     case "${opt}" in
     n)
         netty_host=${OPTARG}
